@@ -3,10 +3,7 @@
 <?import javafx.scene.Group?>
 <?import javafx.scene.shape.Rectangle?>
 
-<!--</fx:rootGroup>-->
-
 <fx:root type="javafx.scene.Group" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1">
-<!--<fx:root type="javafx.scene.layout.VBox" xmlns=" http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">-->
     <children>
         <Rectangle fx:id="a0" arcHeight="5.0" arcWidth="5.0" height="50.0" layoutX="50.0" layoutY="100.0" stroke="BLACK" strokeType="INSIDE" width="50.0" />
         <Rectangle fx:id="a1" arcHeight="5.0" arcWidth="5.0" height="50.0" layoutX="50.0" stroke="BLACK" strokeType="INSIDE" width="50.0" />

@@ -17,6 +17,7 @@ public class App extends Application {
     static Point scene2board;
     @FXML PieceA pieceA1;
     @FXML PieceA pieceA2;
+    @FXML PieceB pieceB1;
     @FXML private GridPane gridPane;
     @FXML StackPane stackPane;
     @FXML GridPane smallGridPane;
@@ -25,7 +26,9 @@ public class App extends Application {
     @FXML void initialize() {
         scene2board = new Point(100, 100);
         pieceA1.setFill(Color.CYAN);
-        pieceA2.setFill(Color.CORAL);
+        pieceA2.setFill(Color.YELLOW);
+        pieceB1.setFill(Color.CORAL);
+        pieceA1.requestFocus();
     }
 
     @Override
@@ -33,6 +36,7 @@ public class App extends Application {
         FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("block_game.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 800, 810);
         scene.getStylesheets().add(getClass().getResource("block_game.css").toExternalForm());
+
         stage.setTitle("Block Game");
         stage.setScene(scene);
         stage.show();
