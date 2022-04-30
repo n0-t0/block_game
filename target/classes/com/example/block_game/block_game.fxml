@@ -14,6 +14,7 @@
 
 <?import com.example.block_game.PieceA?>
 
+<?import com.example.block_game.PieceB?>
 <VBox fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="951.0" prefWidth="1060.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.block_game.App">
     <children>
         <MenuBar prefHeight="50.0" prefWidth="2416.0">
@@ -83,6 +84,7 @@
                             <children>
                                 <PieceA fx:id="pieceA1" />
                                 <PieceA fx:id="pieceA2" />
+                                <PieceB fx:id="pieceB1" />
                             </children>
                         </Pane>
                     </children>
