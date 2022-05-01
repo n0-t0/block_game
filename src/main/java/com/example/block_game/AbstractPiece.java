@@ -31,6 +31,10 @@ abstract class AbstractPiece extends Group {
         this.color = color;
     }
 
+    public Rectangle getKey() {
+        return key;
+    }
+
 
 
     AbstractPiece(String resource, int playerID, Paint color) {
@@ -47,8 +51,7 @@ abstract class AbstractPiece extends Group {
         this.setFill(color);
     }
 
-    @FXML
-    void initialize() {
+    @FXML void initialize() {
         this.setFill(color);
 
         this.setOnMousePressed(event -> {
@@ -77,10 +80,10 @@ abstract class AbstractPiece extends Group {
 
 
             print2D(getFillSlotInBoard());
-            System.out.println("");
-            print2D(getEdgeSlotInBoard());
-            System.out.println("");
-            print2D(getPointSlotInBoard());
+//            System.out.println("");
+//            print2D(getEdgeSlotInBoard());
+//            System.out.println("");
+//            print2D(getPointSlotInBoard());
         });
 
 
@@ -96,6 +99,8 @@ abstract class AbstractPiece extends Group {
                 case "d" -> {
                     System.out.println("D");
                     this.setRotate(this.getRotate() + 90);
+
+                    ////////
                 }
                 case "s" -> {
                     System.out.println("S");
@@ -124,6 +129,11 @@ abstract class AbstractPiece extends Group {
                 default -> {
                 }
             }
+
+
+            print2D(getFillSlotInBoard());/////
+//            print2D(getEdgeSlotInBoard());
+//            print2D(getPointSlotInBoard());
         });
     }
 
@@ -134,6 +144,7 @@ abstract class AbstractPiece extends Group {
             rectangle.setFill(paint);
         }
     }
+
     public Slot getSlot() {
         return this.slot;
     }
@@ -150,6 +161,19 @@ abstract class AbstractPiece extends Group {
     // 左上スロット座標＋回転込みキーピースオフセットでキーピースのスロットを返す
     // 左上スロット座標＋回転込みキーピースオフセット+回転込みキーピースに対する双対位置で全てのピース位置を返す
 
+    static void print2D(Boolean[][] rectArrayXY) {
+        Arrays.stream(rectArrayXY).forEach((arrayX) ->{
+            Arrays.stream(arrayX).forEach((elem) ->{
+                if(elem.toString().equals("true")) {
+                    System.out.print("\u001b[00;31m"+elem.toString()+" "+"\u001b[00m"+",");
+                } else {
+                    System.out.print(elem.toString()+",");
+                }
+            });
+            System.out.println("");
+        });
+    }
+
     private Boolean[][] getPieceSlot() {
         int xLim = 7;
         int yLim = 7;
@@ -163,24 +187,13 @@ abstract class AbstractPiece extends Group {
         }
 
         for(Node child: children) {
-            rectArrayXY[(int)child.getLayoutY()/50+1][(int)child.getLayoutX()/50+1] = true;
+            if(!child.isDisabled()) rectArrayXY[(int)child.getLayoutY()/50+1][(int)child.getLayoutX()/50+1] = true;
         }
 
-        return rectArrayXY;
+        return setRotateMapping(rectArrayXY);
     }
 
-    static void print2D(Boolean[][] rectArrayXY) {
-        Arrays.stream(rectArrayXY).forEach((arrayX) ->{
-            Arrays.stream(arrayX).forEach((elem) ->{
-                if(elem.toString().equals("true")) {
-                    System.out.print("\u001b[00;31m"+elem.toString()+" "+"\u001b[00m"+",");
-                } else {
-                    System.out.print(elem.toString()+",");
-                }
-            });
-            System.out.println("");
-        });
-    }
+
 
     private Boolean[][] getEdgeSlot() {
         int xLim = 7;
@@ -221,7 +234,7 @@ abstract class AbstractPiece extends Group {
             }
         }
 
-        return rectEdgeXY;
+        return setRotateMapping(rectEdgeXY);
 
     }
     public Boolean[][] getPointSlot() {
@@ -239,20 +252,20 @@ abstract class AbstractPiece extends Group {
             rectPointXY [i] = rectPointX;
         }
 
-        for(int i=0; i<yLim-1; i++) {
-            for(int j=0; j<xLim-1; j++) {
+        for(int i=0; i<yLim; i++) {
+            for(int j=0; j<xLim; j++) {
                 if(!(rectArrayXY[i][j] || rectEdgeXY[i][j])) {
-                    if(rectArrayXY[i+1][j+1]) {
+                    if((i+1)<yLim &&(j+1)<xLim && rectArrayXY[i+1][j+1]) {
                         System.out.println((i+1)+","+(j+1));
 //                        System.out.println("LEFT_UP: "+i+","+j);
                         rectPointXY[i][j] = true;
                     }
-                    if(j>0 && rectArrayXY[i+1][j-1]) {
+                    if((i+1)<yLim && j>0 && rectArrayXY[i+1][j-1]) {
                         System.out.println((i+1)+","+(j-1));
 //                        System.out.println("RIGHT_UP: "+i+","+j);
                         rectPointXY[i][j] = true;
                     }
-                    if (i>0 && rectArrayXY[i-1][j+1]) {
+                    if (i>0 && (j+1)<xLim && rectArrayXY[i-1][j+1]) {
                         System.out.println((i-1)+","+(j+1));
 //                        System.out.println("LEFT_DOWN: "+i+","+j);
                         rectPointXY[i][j] = true;
@@ -265,38 +278,27 @@ abstract class AbstractPiece extends Group {
                 }
             }
         }
-        System.out.println("Fill: ");
-        print2D(rectArrayXY);
-        System.out.println("Edge: ");
-        print2D(rectEdgeXY);
-        System.out.println("Point: ");
-        print2D(rectPointXY);
-
-        return rectPointXY;
+        return setRotateMapping(rectPointXY);
     }
 
 
+
     public Boolean[][] getInBoard(Boolean[][] mapping, int xlim, int ylim ,int s, int t) {
-
-        System.out.println(this.getSlot().x());
-        System.out.println(this.getSlot().y());
-        int xLim = 14;
-        int yLim = 14;
-
+//        System.out.println(this.getSlot().x());
+//        System.out.println(this.getSlot().y());
+        int xLim = 18;
+        int yLim = 18;
         Boolean[][] board = new Boolean[yLim][];
         for(int i=0; i<yLim; i++) {
             Boolean[] boardX = new Boolean[xLim];
             Arrays.fill(boardX, false);
             board [i] = boardX;
         }
-
         for(int i=0; i<ylim; i++) {
             for(int j=0; j<xlim; j++) {
-                if((i+t)<yLim && (j+s)<xLim) board[i+t][j+s] = mapping[i][j];
+                if((i+t+2)<yLim && (j+s+2)<xLim) board[i+t+2][j+s+2] = mapping[i][j];
             }
         }
-
-//        print2D(board);
         return board;
     }
 
@@ -309,6 +311,51 @@ abstract class AbstractPiece extends Group {
     public Boolean[][] getPointSlotInBoard() {
         return getInBoard(getPointSlot(), 7, 7, this.getSlot().x(), this.getSlot().y());
     }
+
+    //////////////////////////////
+
+    Boolean[][] rotate(Boolean[][] mapping) {
+        int yLim = 7;
+        int xLim = 7;
+        Boolean[][] rotateXY = new Boolean[yLim][];
+        for(int i=0; i<yLim; i++) {
+            Boolean[] rotateX = new Boolean[xLim];
+            Arrays.fill(rotateX, false);
+            rotateXY [i] = rotateX;
+        }
+        for(int i=0; i<yLim; i++) {
+            for(int j=0; j<xLim; j++) {
+                rotateXY[j][yLim-i-1] = mapping[i][j];
+            }
+        }
+        return rotateXY;
+    }
+
+    Boolean[][] setRotateMapping(Boolean[][] mapping) {
+        int rot = (int)this.getRotate()/90;
+        Boolean[][] rotateMapping;
+//        System.out.println(rot);
+        switch (rot%4) {
+            case 0:
+                rotateMapping = mapping;
+                break;
+            case 1:
+                rotateMapping = rotate(mapping);
+                break;
+            case 2:
+                rotateMapping = rotate(rotate(mapping));
+                break;
+            case 3:
+                rotateMapping = rotate(rotate(rotate(mapping)));
+                break;
+            default:
+                rotateMapping = getPieceSlot();
+                break;
+        }
+        return rotateMapping;
+    }
+
+
 }
 
 
