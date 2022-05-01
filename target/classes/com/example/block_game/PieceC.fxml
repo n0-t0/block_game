@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.Group?>
+<?import javafx.scene.shape.Rectangle?>
+
+<fx:root type="javafx.scene.Group" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1">
+    <children>
+        <Rectangle fx:id="a0" arcHeight="5.0" arcWidth="5.0" height="50.0" layoutX="0.0" layoutY="0.0" stroke="BLACK" strokeType="INSIDE" width="50.0" />
+        <Rectangle fx:id="a1" arcHeight="5.0" arcWidth="5.0" height="50.0" layoutX="50.0" layoutY="50.0" stroke="BLACK" strokeType="INSIDE" width="50.0" />
+        <Rectangle fx:id="a2" arcHeight="5.0" arcWidth="5.0" height="50.0" layoutX="50.0" layoutY="0.0" stroke="BLACK" strokeType="INSIDE" width="50.0" />
+        <Rectangle fx:id="a3" arcHeight="5.0" arcWidth="5.0" height="50.0" layoutX="100.0" layoutY="0.0" stroke="BLACK" strokeType="INSIDE" width="50.0" />
+        <Rectangle fx:id="a4" arcHeight="5.0" arcWidth="5.0" height="50.0" layoutX="150.0" layoutY="0.0" stroke="BLACK" strokeType="INSIDE" width="50.0" />
+    </children>
+</fx:root>
