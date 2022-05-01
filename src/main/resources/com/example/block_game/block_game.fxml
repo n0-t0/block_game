@@ -81,11 +81,6 @@
                             </rowConstraints>
                         </GridPane>
                         <Pane fx:id="gamePane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="600.0" >
-                            <children>
-                                <PieceA fx:id="pieceA1" />
-                                <PieceA fx:id="pieceA2" />
-                                <PieceB fx:id="pieceB1" />
-                            </children>
                         </Pane>
                     </children>
                 </StackPane>

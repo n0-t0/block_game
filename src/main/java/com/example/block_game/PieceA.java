@@ -1,6 +1,7 @@
 package com.example.block_game;
 
 import javafx.fxml.FXML;
+import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 
 public class PieceA extends AbstractPiece {
@@ -9,11 +10,10 @@ public class PieceA extends AbstractPiece {
     @FXML private Rectangle a2;
     @FXML private Rectangle a3;
     @FXML private Rectangle a4;
-    // コンストラクタ
-    public PieceA() {
-        super("pieceA.fxml");
+    public PieceA(int playerID, Paint color) {
+        super("pieceA.fxml", playerID, color);
         slot = new Slot(0, 0);
-        key = a2;
+        key = a0;
         drag = new Drag();
     }
 }

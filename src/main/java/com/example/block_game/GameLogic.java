@@ -1,8 +1,5 @@
 package com.example.block_game;
 
-
-import javafx.scene.paint.Color;
-
 public class GameLogic {
 
     private static Slot getSlot(double x, double y) {
@@ -28,29 +25,19 @@ public class GameLogic {
     }
 
     static Slot dragMove(AbstractPiece piece) { // ドラッグ用
-
         //  落ちた位置の最近傍論理スロットの取得
         Point movePoint = piece.getSelfPoint();
         Slot moveSlot = GameLogic.getSlot(movePoint.x(), movePoint.y());
-
-        // スロットにおいて良いかチェックする
-        if(GameLogic.registerBoardMap(piece)) {
-            System.out.println("Move to Slot"+"("+moveSlot.x()+","+moveSlot.y()+")");
-            piece.setLayoutX(moveSlot.x()*50);
-            piece.setLayoutY(moveSlot.y()*50);
-            return moveSlot;
-        } else {
-//            piece.setFill(Color.DARKRED);
-            return piece.getSlot();
-        }
+        return GameLogic.move(piece, moveSlot);
     }
-    static  Slot keyMove(AbstractPiece piece, Slot moveSlot) {
+
+
+    static  Slot move(AbstractPiece piece, Slot moveSlot) {
         // スロットにおいて良いかチェックする
         if(GameLogic.registerBoardMap(piece)) {
             System.out.println("Move to Slot"+"("+moveSlot.x()+","+moveSlot.y()+")");
             piece.setLayoutX(moveSlot.x()*50);
             piece.setLayoutY(moveSlot.y()*50);
-
             return moveSlot;
         } else {
 //            piece.setFill(Color.DARKRED);
