@@ -10,7 +10,6 @@ import javafx.scene.shape.Rectangle;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
 
 abstract class AbstractPiece extends Group {
     protected int playerID;
@@ -53,11 +52,8 @@ abstract class AbstractPiece extends Group {
         this.setFill(color);
 
         this.setOnMousePressed(event -> {
-
-            getPointSlot();////
-
             this.requestFocus();
-            System.out.println(this.isFocused());
+//            System.out.println(this.isFocused());
             drag.setPressValue(event);
             selfPointOnPressed = new Point(this.getLayoutX(), this.getLayoutY());
         });
@@ -78,6 +74,13 @@ abstract class AbstractPiece extends Group {
                     selfPointOnPressed.y() + drag.getReleaseDistance().y()
             );
             slot = GameLogic.dragMove(this);
+
+
+            print2D(getFillSlotInBoard());
+            System.out.println("");
+            print2D(getEdgeSlotInBoard());
+            System.out.println("");
+            print2D(getPointSlotInBoard());
         });
 
 
@@ -163,10 +166,6 @@ abstract class AbstractPiece extends Group {
             rectArrayXY[(int)child.getLayoutY()/50+1][(int)child.getLayoutX()/50+1] = true;
         }
 
-        print2D(rectArrayXY);
-
-
-
         return rectArrayXY;
     }
 
@@ -200,21 +199,21 @@ abstract class AbstractPiece extends Group {
         for(int i=0+1; i<yLim-1; i++) {
             for(int j=0+1; j<xLim-1; j++) {
                 if(rectArrayXY[i][j]==true) {
-                    System.out.println("("+i+","+j+"): ");
+//                    System.out.println("("+i+","+j+"): ");
                     if(rectArrayXY[i+1][j]==false) {
-                        System.out.println("DOWN_EDGE: ("+(i+1)+", "+j+")");
+//                        System.out.println("DOWN_EDGE: ("+(i+1)+", "+j+")");
                         rectEdgeXY[i+1][j] = true;
                     }
                     if(rectArrayXY[i-1][j]==false) {
-                        System.out.println("UP_EDGE: ("+(i-1)+", "+j+")");
+//                        System.out.println("UP_EDGE: ("+(i-1)+", "+j+")");
                         rectEdgeXY[i-1][j] = true;
                     }
                     if(rectArrayXY[i][j+1]==false) {
-                        System.out.println("RIGHT_EDGE: ("+i+", "+(j+1)+")");
+//                        System.out.println("RIGHT_EDGE: ("+i+", "+(j+1)+")");
                         rectEdgeXY[i][j+1] = true;
                     }
                     if(rectArrayXY[i][j-1]==false) {
-                        System.out.println("LEFT_EDGE: ("+i+", "+(j-1)+")");
+//                        System.out.println("LEFT_EDGE: ("+i+", "+(j-1)+")");
                         rectEdgeXY[i][j-1] = true;
                     }
                     System.out.println("");
@@ -222,12 +221,10 @@ abstract class AbstractPiece extends Group {
             }
         }
 
-
-        print2D(rectEdgeXY);
         return rectEdgeXY;
 
     }
-    public void getPointSlot() {
+    public Boolean[][] getPointSlot() {
         int xLim = 7;
         int yLim = 7;
         Boolean[][] rectArrayXY = getPieceSlot();
@@ -247,31 +244,70 @@ abstract class AbstractPiece extends Group {
                 if(!(rectArrayXY[i][j] || rectEdgeXY[i][j])) {
                     if(rectArrayXY[i+1][j+1]) {
                         System.out.println((i+1)+","+(j+1));
-                        System.out.println("LEFT_UP: "+i+","+j);
+//                        System.out.println("LEFT_UP: "+i+","+j);
                         rectPointXY[i][j] = true;
                     }
                     if(j>0 && rectArrayXY[i+1][j-1]) {
                         System.out.println((i+1)+","+(j-1));
-                        System.out.println("RIGHT_UP: "+i+","+j);
+//                        System.out.println("RIGHT_UP: "+i+","+j);
                         rectPointXY[i][j] = true;
                     }
                     if (i>0 && rectArrayXY[i-1][j+1]) {
                         System.out.println((i-1)+","+(j+1));
-                        System.out.println("LEFT_DOWN: "+i+","+j);
+//                        System.out.println("LEFT_DOWN: "+i+","+j);
                         rectPointXY[i][j] = true;
                     }
                     if(i>0 && j>0 && rectArrayXY[i-1][j-1]) {
                         System.out.println((i-1)+","+(j-1));
-                        System.out.println("RIGHT_DOWN: "+i+","+j);
+//                        System.out.println("RIGHT_DOWN: "+i+","+j);
                         rectPointXY[i][j] = true;
                     }
                 }
             }
         }
+        System.out.println("Fill: ");
         print2D(rectArrayXY);
-        System.out.println("");
+        System.out.println("Edge: ");
+        print2D(rectEdgeXY);
+        System.out.println("Point: ");
         print2D(rectPointXY);
 
+        return rectPointXY;
+    }
+
+
+    public Boolean[][] getInBoard(Boolean[][] mapping, int xlim, int ylim ,int s, int t) {
+
+        System.out.println(this.getSlot().x());
+        System.out.println(this.getSlot().y());
+        int xLim = 14;
+        int yLim = 14;
+
+        Boolean[][] board = new Boolean[yLim][];
+        for(int i=0; i<yLim; i++) {
+            Boolean[] boardX = new Boolean[xLim];
+            Arrays.fill(boardX, false);
+            board [i] = boardX;
+        }
+
+        for(int i=0; i<ylim; i++) {
+            for(int j=0; j<xlim; j++) {
+                if((i+t)<yLim && (j+s)<xLim) board[i+t][j+s] = mapping[i][j];
+            }
+        }
+
+//        print2D(board);
+        return board;
+    }
+
+    public Boolean[][] getFillSlotInBoard() {
+        return getInBoard(getPieceSlot(),7 ,7 ,this.getSlot().x(), this.getSlot().y());
+    }
+    public Boolean[][] getEdgeSlotInBoard() {
+        return  getInBoard(getEdgeSlot(), 7, 7, this.getSlot().x(), this.getSlot().y());
+    }
+    public Boolean[][] getPointSlotInBoard() {
+        return getInBoard(getPointSlot(), 7, 7, this.getSlot().x(), this.getSlot().y());
     }
 }
 

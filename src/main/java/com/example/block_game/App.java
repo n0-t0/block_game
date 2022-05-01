@@ -34,11 +34,13 @@ public class App extends Application {
 
         List<Paint> colorPreference = List.of(Color.RED, Color.BLUE, Color.GREEN, Color.YELLOW);
         List<Player> players = new ArrayList<>();
-        int playerNum = 4;
+        int playerNum = 1;
         for(int i=1; i<=playerNum; i++) {
             List<AbstractPiece> pieces = List.of(
                     new PieceA(i, colorPreference.get(i-1)),
-                    new PieceB(i, colorPreference.get(i-1))
+                    new PieceB(i, colorPreference.get(i-1)),
+                    new PieceC(i, colorPreference.get(i-1)),
+                    new PieceD(i, colorPreference.get(i-1))
             );
             gamePane.getChildren().addAll(pieces);
             players.add(new Player(i, colorPreference.get(i-1), pieces));
