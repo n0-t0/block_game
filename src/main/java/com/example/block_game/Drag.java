@@ -16,7 +16,7 @@ public class Drag {
 
     public void setPressValue(MouseEvent event) {
         if(event.getEventType() == MOUSE_PRESSED) {
-            this.press = new Point(event.getSceneX()- App.scene2board.x(), event.getSceneY()-App.scene2board.y());
+            this.press = new Point(event.getSceneX()- App.getScene2Board().x(), event.getSceneY()-App.getScene2Board().y());
 //            System.out.println("offset: "+App.scene2board.x());
             System.out.println("press: "+this.press.toString());
         }
@@ -27,7 +27,7 @@ public class Drag {
 
     public void setDragValue(MouseEvent event) {
         if(event.getEventType() == MOUSE_DRAGGED) {
-            this.drag = new Point(event.getSceneX()-App.scene2board.x(), event.getSceneY()-App.scene2board.y());
+            this.drag = new Point(event.getSceneX()-App.getScene2Board().x(), event.getSceneY()-App.getScene2Board().y());
 //            System.out.println("drag: "+this.drag.toString());
         }
     }
@@ -39,7 +39,7 @@ public class Drag {
 
     public void setReleaseValue(MouseEvent event) {
         if(event.getEventType() == MOUSE_RELEASED) {
-            this.release = new Point(event.getSceneX()-App.scene2board.x(), event.getSceneY()-App.scene2board.y());
+            this.release = new Point(event.getSceneX()-App.getScene2Board().x(), event.getSceneY()-App.getScene2Board().y());
             System.out.println("release: "+this.release.toString());
         }
     }

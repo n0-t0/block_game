@@ -5,16 +5,22 @@ import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 
 public class PieceB extends AbstractPiece {
-    @FXML private Rectangle a0;
-    @FXML private Rectangle a1;
-    @FXML private Rectangle a2;
-    @FXML private Rectangle a3;
-    @FXML private Rectangle a4;
+    @FXML private Rectangle b0;
+    @FXML private Rectangle b1;
+    @FXML private Rectangle b2;
+    @FXML private Rectangle b3;
+    @FXML private Rectangle b4;
+    @FXML private Rectangle br;
+    @FXML private Rectangle bl;
     // コンストラクタ
     public PieceB(int playerID, Paint color) {
         super("pieceB.fxml", playerID, color);
-        slot = new Slot(0, 0);
-        key = a1;
-        drag = new Drag();
+        disableAnkerRect();
+    }
+    private void disableAnkerRect() {
+        this.bl.setDisable(true);
+        this.br.setDisable(true);
+        this.bl.setOpacity(0);
+        this.br.setOpacity(0);
     }
 }

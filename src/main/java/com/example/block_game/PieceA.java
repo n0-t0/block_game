@@ -10,10 +10,16 @@ public class PieceA extends AbstractPiece {
     @FXML private Rectangle a2;
     @FXML private Rectangle a3;
     @FXML private Rectangle a4;
+    @FXML private Rectangle ar;
+    @FXML private Rectangle al;
     public PieceA(int playerID, Paint color) {
         super("pieceA.fxml", playerID, color);
-        slot = new Slot(0, 0);
-        key = a0;
-        drag = new Drag();
+        disableAnkerRect();
+    }
+    private void disableAnkerRect() {
+        this.al.setDisable(true);
+        this.ar.setDisable(true);
+        this.al.setOpacity(0);
+        this.ar.setOpacity(0);
     }
 }

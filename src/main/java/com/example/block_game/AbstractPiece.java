@@ -10,53 +10,44 @@ import javafx.scene.shape.Rectangle;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Objects;
 
 abstract class AbstractPiece extends Group {
-    protected int playerID;
-    protected Paint color;
+    ////////////////////////////////////
+    // コンストラクタで初期化されたら変化しない値
+    private final int playerID;
     // ピースの色
-    protected Paint paint;
-    // キーピースとそのスロット位置
-    protected Rectangle key;
-    protected Slot slot;
-    protected Drag drag = new Drag();
+    private final Paint paint;
+    /////////////////////////////////////
+    // 状態
+    // スロット位置
+    private Slot slot = new Slot(0,0);
+    // ドラッグ用一時変数
+    private Drag drag = new Drag();
+    private Point selfPoint;
+    private Point selfPointOnPressed;
+    /////////////////////////////////////
 
-    protected Point selfPoint;
-    protected Point selfPointOnPressed;
-
-    public void setPlayerID(int playerID) {
-        this.playerID = playerID;
-    }
-    public void selColor(Paint color) {
-        this.color = color;
-    }
-
-    public Rectangle getKey() {
-        return key;
-    }
-
-
-
-    AbstractPiece(String resource, int playerID, Paint color) {
+    protected AbstractPiece(String resource, int playerID, Paint paint) {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(resource));
         fxmlLoader.setRoot(this);
         fxmlLoader.setController(this);
         try {
             fxmlLoader.load();
         } catch(IOException exception) {
+            System.out.println(this.getClass().getName()+"のロードで例外が発生");
             throw new RuntimeException(exception);
         }
         this.playerID = playerID;
-        this.color = color;
-        this.setFill(color);
+        this.paint = paint;
+
+        // オーバーライド可能なメソッドをコンストラクタで呼ぶのはまずい！！
+        this.setFill(paint);
     }
 
-    @FXML void initialize() {
-        this.setFill(color);
-
+    private @FXML void initialize() {
         this.setOnMousePressed(event -> {
             this.requestFocus();
-//            System.out.println(this.isFocused());
             drag.setPressValue(event);
             selfPointOnPressed = new Point(this.getLayoutX(), this.getLayoutY());
         });
@@ -99,8 +90,6 @@ abstract class AbstractPiece extends Group {
                 case "d" -> {
                     System.out.println("D");
                     this.setRotate(this.getRotate() + 90);
-
-                    ////////
                 }
                 case "s" -> {
                     System.out.println("S");
@@ -112,19 +101,19 @@ abstract class AbstractPiece extends Group {
                 }
                 case "j" -> {
                     System.out.println("Left");
-                    slot = GameLogic.move(this, Slot.left(slot));
+                    slot = GameLogic.move(this, slot.getLeft());
                 }
                 case "l" -> {
                     System.out.println("Right");
-                    slot = GameLogic.move(this, Slot.right(slot));
+                    slot = GameLogic.move(this, slot.getRight());
                 }
                 case "i" -> {
                     System.out.println("up");
-                    slot = GameLogic.move(this, Slot.up(slot));
+                    slot = GameLogic.move(this, slot.getUp());
                 }
                 case "k" -> {
                     System.out.println("Down");
-                    slot = GameLogic.move(this, Slot.down(slot));
+                    slot = GameLogic.move(this, slot.getDown());
                 }
                 default -> {
                 }
@@ -137,18 +126,17 @@ abstract class AbstractPiece extends Group {
         });
     }
 
-    public void setFill(Paint paint) {
-        this.paint = paint;
+    private void setFill(Paint paint) {
         for(Node node: this.getChildren()) {
             Rectangle rectangle = (Rectangle) node;
             rectangle.setFill(paint);
         }
     }
 
-    public Slot getSlot() {
+    Slot getSlot() {
         return this.slot;
     }
-    public Point getSelfPoint() {
+    Point getSelfPoint() {
         return this.selfPoint;
     }
 
@@ -161,7 +149,7 @@ abstract class AbstractPiece extends Group {
     // 左上スロット座標＋回転込みキーピースオフセットでキーピースのスロットを返す
     // 左上スロット座標＋回転込みキーピースオフセット+回転込みキーピースに対する双対位置で全てのピース位置を返す
 
-    static void print2D(Boolean[][] rectArrayXY) {
+    private static void print2D(Boolean[][] rectArrayXY) {
         Arrays.stream(rectArrayXY).forEach((arrayX) ->{
             Arrays.stream(arrayX).forEach((elem) ->{
                 if(elem.toString().equals("true")) {
@@ -190,7 +178,7 @@ abstract class AbstractPiece extends Group {
             if(!child.isDisabled()) rectArrayXY[(int)child.getLayoutY()/50+1][(int)child.getLayoutX()/50+1] = true;
         }
 
-        return setRotateMapping(rectArrayXY);
+        return setRotateMapping(setReverseMappingY(setReverseMappingX(rectArrayXY)));
     }
 
 
@@ -234,10 +222,10 @@ abstract class AbstractPiece extends Group {
             }
         }
 
-        return setRotateMapping(rectEdgeXY);
+        return setRotateMapping(setReverseMappingY(setReverseMappingX(rectEdgeXY)));
 
     }
-    public Boolean[][] getPointSlot() {
+    private Boolean[][] getPointSlot() {
         int xLim = 7;
         int yLim = 7;
         Boolean[][] rectArrayXY = getPieceSlot();
@@ -278,14 +266,13 @@ abstract class AbstractPiece extends Group {
                 }
             }
         }
-        return setRotateMapping(rectPointXY);
+        return setRotateMapping(setReverseMappingY(setReverseMappingX(rectPointXY)));
     }
 
 
 
-    public Boolean[][] getInBoard(Boolean[][] mapping, int xlim, int ylim ,int s, int t) {
-//        System.out.println(this.getSlot().x());
-//        System.out.println(this.getSlot().y());
+    private Boolean[][] getInBoard(Boolean[][] mapping, int xlim, int ylim ,int s, int t) {
+
         int xLim = 18;
         int yLim = 18;
         Boolean[][] board = new Boolean[yLim][];
@@ -296,25 +283,25 @@ abstract class AbstractPiece extends Group {
         }
         for(int i=0; i<ylim; i++) {
             for(int j=0; j<xlim; j++) {
-                if((i+t+2)<yLim && (j+s+2)<xLim) board[i+t+2][j+s+2] = mapping[i][j];
+                if( i+t+2>=0 && j+s+2>=0 && (i+t+2)<yLim && (j+s+2)<xLim ) board[i+t+2][j+s+2] = mapping[i][j];
             }
         }
         return board;
     }
 
-    public Boolean[][] getFillSlotInBoard() {
-        return getInBoard(getPieceSlot(),7 ,7 ,this.getSlot().x(), this.getSlot().y());
+    private Boolean[][] getFillSlotInBoard() {
+        return getInBoard(getPieceSlot(),7 ,7 ,this.getSlot().x, this.getSlot().y);
     }
-    public Boolean[][] getEdgeSlotInBoard() {
-        return  getInBoard(getEdgeSlot(), 7, 7, this.getSlot().x(), this.getSlot().y());
+    private Boolean[][] getEdgeSlotInBoard() {
+        return  getInBoard(getEdgeSlot(), 7, 7, this.getSlot().x, this.getSlot().y);
     }
-    public Boolean[][] getPointSlotInBoard() {
-        return getInBoard(getPointSlot(), 7, 7, this.getSlot().x(), this.getSlot().y());
+    private Boolean[][] getPointSlotInBoard() {
+        return getInBoard(getPointSlot(), 7, 7, this.getSlot().x, this.getSlot().y);
     }
 
     //////////////////////////////
 
-    Boolean[][] rotate(Boolean[][] mapping) {
+    private Boolean[][] rotate(Boolean[][] mapping) {
         int yLim = 7;
         int xLim = 7;
         Boolean[][] rotateXY = new Boolean[yLim][];
@@ -331,9 +318,9 @@ abstract class AbstractPiece extends Group {
         return rotateXY;
     }
 
-    Boolean[][] setRotateMapping(Boolean[][] mapping) {
+    private Boolean[][] setRotateMapping(Boolean[][] mapping) {
         int rot = (int)this.getRotate()/90;
-        Boolean[][] rotateMapping;
+        Boolean[][] rotateMapping = new Boolean[0][];
 //        System.out.println(rot);
         switch (rot%4) {
             case 0:
@@ -349,11 +336,77 @@ abstract class AbstractPiece extends Group {
                 rotateMapping = rotate(rotate(rotate(mapping)));
                 break;
             default:
-                rotateMapping = getPieceSlot();
                 break;
         }
         return rotateMapping;
     }
+
+    private Boolean[][] reverseX(Boolean[][] mapping) {
+        int yLim = 7;
+        int xLim = 7;
+        Boolean[][] reverseXY = new Boolean[yLim][];
+        for(int i=0; i<yLim; i++) {
+            Boolean[] reverseX = new Boolean[xLim];
+            Arrays.fill(reverseX, false);
+            reverseXY[i] = reverseX;
+        }
+        for(int i=0; i<yLim; i++) {
+            for(int j=0; j<xLim; j++) {
+                reverseXY[i][xLim-1-j] = mapping[i][j];
+            }
+        }
+        return reverseXY;
+    }
+
+    private Boolean[][] reverseY(Boolean[][] mapping) {
+        int yLim = 7;
+        int xLim = 7;
+        Boolean[][] reverseXY = new Boolean[yLim][];
+        for(int i=0; i<yLim; i++) {
+            Boolean[] reverseX = new Boolean[xLim];
+            Arrays.fill(reverseX, false);
+            reverseXY[i] = reverseX;
+        }
+        for(int i=0; i<yLim; i++) {
+            for(int j=0; j<xLim; j++) {
+                reverseXY[yLim-1-i][j] = mapping[i][j];
+            }
+        }
+        return reverseXY;
+    }
+
+    private Boolean[][] setReverseMappingX(Boolean[][] mapping) {
+        Boolean[][] reverseMapping = new Boolean[0][];
+        switch ((int)this.getScaleX()) {
+            case -1:
+                reverseMapping = reverseX(mapping);
+                break;
+            case 1:
+                reverseMapping = mapping;
+                break;
+            default:
+                break;
+
+        }
+        return reverseMapping;
+    }
+    private Boolean[][] setReverseMappingY(Boolean[][] mapping) {
+        Boolean[][] reverseMapping = new Boolean[0][];
+        switch ((int)this.getScaleY()) {
+            case -1:
+                reverseMapping = reverseY(mapping);
+                break;
+            case 1:
+                reverseMapping = mapping;
+                break;
+            default:
+                break;
+        }
+        return reverseMapping;
+    }
+
+
+
 
 
 }

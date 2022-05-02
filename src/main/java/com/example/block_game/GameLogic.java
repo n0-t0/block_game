@@ -35,9 +35,9 @@ public class GameLogic {
     static  Slot move(AbstractPiece piece, Slot moveSlot) {
         // スロットにおいて良いかチェックする
         if(GameLogic.registerBoardMap(piece)) {
-            System.out.println("Move to Slot"+"("+moveSlot.x()+","+moveSlot.y()+")");
-            piece.setLayoutX(moveSlot.x()*50);
-            piece.setLayoutY(moveSlot.y()*50);
+            System.out.println("Move to Slot"+"("+moveSlot.x+","+moveSlot.y+")");
+            piece.setLayoutX(moveSlot.x*50);
+            piece.setLayoutY(moveSlot.y*50);
             return moveSlot;
         } else {
 //            piece.setFill(Color.DARKRED);
