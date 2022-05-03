@@ -4,32 +4,29 @@ import javafx.application.Application;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-public class App extends Application {
-    private static Point scene2board;
+public final class App extends Application {
+    // ウィンドウ座標とゲーム盤座標の変換用オフセット
+    private static Point scene2board = new Point(100, 100);
     private @FXML Pane gamePane;
     private @FXML GridPane gridPane;
 
     private @FXML void initialize() {
-        scene2board = new Point(100, 100);
 
         List<Paint> colorPreference = List.of(Color.RED, Color.BLUE, Color.GREEN, Color.YELLOW);
         List<Player> players = new ArrayList<>();
-        int playerNum = 1;
-        for(int i=1; i<=playerNum; i++) {
+        final int PLAYER_NUM = 4;
+
+        for(int i=1; i<=PLAYER_NUM; i++) {
             List<AbstractPiece> pieces = List.of(
                     new PieceA(i, colorPreference.get(i-1)),
                     new PieceB(i, colorPreference.get(i-1)),
@@ -58,13 +55,15 @@ public class App extends Application {
     public static void main(String[] args) {
         launch();
     }
-
+    // ウィンドウサイズのリスナー
     private void checkGameResize() {
-        scene2board.setX(gridPane.getCellBounds(1,1).getMinX());
-        scene2board.setY(gridPane.getCellBounds(1,1).getMinY());
-        System.out.println(scene2board.x()+","+scene2board.y());
+        scene2board = new Point(
+                gridPane.getCellBounds(1,1).getMinX(),
+                gridPane.getCellBounds(1,1).getMinY()
+        );
     }
+
     static Point getScene2Board() {
-        return getScene2Board();
+        return scene2board;
     }
 }

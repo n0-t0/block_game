@@ -7,10 +7,9 @@ import java.util.List;
 public class Player {
     private int id;
     private Paint color;
+    private List<AbstractPiece> pieces;
 
-    List<AbstractPiece> pieces;
-
-    Player(int id, Paint color, List<AbstractPiece> pieces) {
+    public Player(int id, Paint color, List<AbstractPiece> pieces) {
         this.id = id;
         this.color = color;
         this.pieces = pieces;
@@ -18,4 +17,6 @@ public class Player {
     public int getID() {
         return id;
     }
+    public Paint getColor() { return color; }
+    public List<AbstractPiece> getPieces() { return pieces; }
 }

@@ -5,27 +5,32 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Objects;
 
 abstract class AbstractPiece extends Group {
+    ///////////////////////////////////
+    // 定数
+    final int PIECE_LIM_X = 7;
+    final int PIECE_LIM_Y = 7;
+    final int BOARD_LIM_X = 18;
+    final int BOARD_LIM_Y = 18;
     ////////////////////////////////////
     // コンストラクタで初期化されたら変化しない値
     private final int playerID;
     // ピースの色
     private final Paint paint;
+
     /////////////////////////////////////
     // 状態
     // スロット位置
     private Slot slot = new Slot(0,0);
     // ドラッグ用一時変数
-    private Drag drag = new Drag();
-    private Point selfPoint;
-    private Point selfPointOnPressed;
+    private DragView dragView = new DragView();
     /////////////////////////////////////
 
     protected AbstractPiece(String resource, int playerID, Paint paint) {
@@ -45,38 +50,71 @@ abstract class AbstractPiece extends Group {
         this.setFill(paint);
     }
 
+    ///////////////////////////////////////////
+    // 座標関係ユーティリティ //
+
+    // マウスの押下位置を画面上の座標系からゲーム盤上の座標系に変換
+    private Point getMousePointInBoard(MouseEvent event) {
+        Point mousePointInScene = new Point(event.getSceneX(), event.getSceneY());
+        return mousePointInScene.minus(App.getScene2Board());
+    }
+    // 自分の座標をゲーム盤上の座標系のPoint型で返す
+    private Point getSelfPointInBoard() {
+        return new Point(this.getLayoutX(), this.getLayoutY());
+    }
+    // ゲーム盤上の座標系のpointの座標に移動する
+    private void relocate(Point point) {
+        this.relocate(point.getX(), point.getY());
+    }
+    /////////////////////////////////////////////
+    // ドラッグ中のビューの更新にのみ使うクラス //
+
+    private final static class DragView {
+        private Point mousePress = new Point( 0.0, 0.0);
+        private Point mouseDrag = new Point( 0.0, 0.0);
+        private Point piecePress = new Point(0.0, 0.0);
+        private Point getView() {
+            Point moveDistance = mouseDrag.minus(mousePress);
+            return piecePress.plus(moveDistance);
+        }
+    }
+    ////////////////////////////////////////
+    // initialize //
+
+    // initializeはコンストラクタ、子コンポーネントidの変数へのバインド後に自動的に呼ばれる。
+    // ここでは各種イベントハンドラの登録を行っている
     private @FXML void initialize() {
         this.setOnMousePressed(event -> {
+
+            // クリックされたらフォーカスする
             this.requestFocus();
-            drag.setPressValue(event);
-            selfPointOnPressed = new Point(this.getLayoutX(), this.getLayoutY());
+
+            // ドラッグ中の一時的なビューの更新のため、この時のマウス・自分(ピース)の位置をゲーム盤常の座標で覚えておく
+            dragView.mousePress = getMousePointInBoard(event);
+            dragView.piecePress = getSelfPointInBoard();
+
         });
 
         this.setOnMouseDragged(event -> {
-            drag.setDragValue(event);
-            selfPoint = new Point(
-                    selfPointOnPressed.x() + drag.getDragDistance().x(),
-                    selfPointOnPressed.y() + drag.getDragDistance().y()
-            );
-            this.relocate(selfPoint.x(), selfPoint.y());
+
+            // ドラッグ中の一時的なビューの更新のため、この時のマウスの位置をゲーム盤常の座標で覚えておく
+            dragView.mouseDrag = getMousePointInBoard(event);
+
+            // 自分の位置のビューだけマウスに追随して移動する(モデルはリリース時にチェックを受けてから更新される)
+            this.relocate(dragView.getView());
+
         });
 
         this.setOnMouseReleased(event -> {
-            drag.setReleaseValue(event);
-            selfPoint = new Point(
-                    selfPointOnPressed.x() + drag.getReleaseDistance().x(),
-                    selfPointOnPressed.y() + drag.getReleaseDistance().y()
-            );
-            slot = GameLogic.dragMove(this);
 
+            // この時の自分(ピース)の位置をゲーム盤常の座標で取得
+            // モデル・ビューの更新可否チェックを外部に投げ、結果をモデルに入れる
+            slot =  GameLogic.move(this, getSelfPointInBoard().getSlot());
 
-            print2D(getFillSlotInBoard());
-//            System.out.println("");
-//            print2D(getEdgeSlotInBoard());
-//            System.out.println("");
-//            print2D(getPointSlotInBoard());
+            // 帰ってきたモデルの通りにビューを更新する
+            this.relocate(slot.getPoint());
+
         });
-
 
         this.setOnKeyTyped(event -> {
             this.requestFocus();
@@ -84,71 +122,55 @@ abstract class AbstractPiece extends Group {
             System.out.print("pressed: ");
             switch (event.getCharacter()) {
                 case "a" -> {
-                    System.out.println("A");
                     this.setRotate(this.getRotate() - 90);
                 }
                 case "d" -> {
-                    System.out.println("D");
                     this.setRotate(this.getRotate() + 90);
                 }
                 case "s" -> {
-                    System.out.println("S");
                     this.setScaleX(this.getScaleX() * (-1));
                 }
                 case "w" -> {
-                    System.out.println("W");
                     this.setScaleY(this.getScaleY() * (-1));
                 }
                 case "j" -> {
-                    System.out.println("Left");
                     slot = GameLogic.move(this, slot.getLeft());
+                    this.relocate(slot.getPoint());
                 }
                 case "l" -> {
-                    System.out.println("Right");
                     slot = GameLogic.move(this, slot.getRight());
+                    this.relocate(slot.getPoint());
                 }
                 case "i" -> {
-                    System.out.println("up");
                     slot = GameLogic.move(this, slot.getUp());
+                    this.relocate(slot.getPoint());
                 }
                 case "k" -> {
-                    System.out.println("Down");
                     slot = GameLogic.move(this, slot.getDown());
+                    this.relocate(slot.getPoint());
                 }
-                default -> {
-                }
+                default -> { }
             }
-
-
-            print2D(getFillSlotInBoard());/////
-//            print2D(getEdgeSlotInBoard());
-//            print2D(getPointSlotInBoard());
         });
     }
-
+    //////////////////////////////////////////////
+    // 色変え
     private void setFill(Paint paint) {
         for(Node node: this.getChildren()) {
             Rectangle rectangle = (Rectangle) node;
             rectangle.setFill(paint);
         }
     }
-
-    Slot getSlot() {
+    // moveに提供
+    public Slot getSlot() {
         return this.slot;
     }
-    Point getSelfPoint() {
-        return this.selfPoint;
-    }
-
 
     ///////////////////////////////////////////
-    // キーピースが正立状態で左上に対してどこにあるのか
-    // キーピースが回転込みでどこにあるのか
-    // 正立状態でのキーピース周りの配置
-    // 回転込みでのキーピース周りの配置
-    // 左上スロット座標＋回転込みキーピースオフセットでキーピースのスロットを返す
-    // 左上スロット座標＋回転込みキーピースオフセット+回転込みキーピースに対する双対位置で全てのピース位置を返す
+    ///////////////////////////////////////////
+    // モデル更新用メソッド //
 
+    // デバッグ用プリント
     private static void print2D(Boolean[][] rectArrayXY) {
         Arrays.stream(rectArrayXY).forEach((arrayX) ->{
             Arrays.stream(arrayX).forEach((elem) ->{
@@ -162,14 +184,13 @@ abstract class AbstractPiece extends Group {
         });
     }
 
-    private Boolean[][] getPieceSlot() {
-        int xLim = 7;
-        int yLim = 7;
+    // このピースで埋められているスロットをキースロットの周囲7*7で返す
+    private Boolean[][] getFillSlot() {
         ObservableList<Node> children = this.getChildren();
 
-        Boolean[][] rectArrayXY = new Boolean[yLim][];
-        for(int i=0; i<yLim; i++) {
-            Boolean[] rectArrayX = new Boolean[xLim];
+        Boolean[][] rectArrayXY = new Boolean[PIECE_LIM_Y][];
+        for(int i=0; i<PIECE_LIM_Y; i++) {
+            Boolean[] rectArrayX = new Boolean[PIECE_LIM_X];
             Arrays.fill(rectArrayX, false);
             rectArrayXY [i] = rectArrayX;
         }
@@ -177,92 +198,54 @@ abstract class AbstractPiece extends Group {
         for(Node child: children) {
             if(!child.isDisabled()) rectArrayXY[(int)child.getLayoutY()/50+1][(int)child.getLayoutX()/50+1] = true;
         }
-
         return setRotateMapping(setReverseMappingY(setReverseMappingX(rectArrayXY)));
     }
 
-
-
+    // このピースに面するスロットをキースロットの周囲7*7で返す
     private Boolean[][] getEdgeSlot() {
-        int xLim = 7;
-        int yLim = 7;
 
-        Boolean[][] rectArrayXY = getPieceSlot();
+        Boolean[][] rectArrayXY = getFillSlot();
 
-
-        Boolean[][] rectEdgeXY = new Boolean[yLim][];
-        for(int i=0; i<yLim; i++) {
-            Boolean[] rectEdgeX = new Boolean[xLim];
+        Boolean[][] rectEdgeXY = new Boolean[PIECE_LIM_Y][];
+        for(int i=0; i<PIECE_LIM_Y; i++) {
+            Boolean[] rectEdgeX = new Boolean[PIECE_LIM_X];
             Arrays.fill(rectEdgeX, false);
             rectEdgeXY [i] = rectEdgeX;
         }
 
-        for(int i=0+1; i<yLim-1; i++) {
-            for(int j=0+1; j<xLim-1; j++) {
+        for(int i=0+1; i<PIECE_LIM_Y-1; i++) {
+            for(int j=0+1; j<PIECE_LIM_X-1; j++) {
                 if(rectArrayXY[i][j]==true) {
-//                    System.out.println("("+i+","+j+"): ");
-                    if(rectArrayXY[i+1][j]==false) {
-//                        System.out.println("DOWN_EDGE: ("+(i+1)+", "+j+")");
-                        rectEdgeXY[i+1][j] = true;
-                    }
-                    if(rectArrayXY[i-1][j]==false) {
-//                        System.out.println("UP_EDGE: ("+(i-1)+", "+j+")");
-                        rectEdgeXY[i-1][j] = true;
-                    }
-                    if(rectArrayXY[i][j+1]==false) {
-//                        System.out.println("RIGHT_EDGE: ("+i+", "+(j+1)+")");
-                        rectEdgeXY[i][j+1] = true;
-                    }
-                    if(rectArrayXY[i][j-1]==false) {
-//                        System.out.println("LEFT_EDGE: ("+i+", "+(j-1)+")");
-                        rectEdgeXY[i][j-1] = true;
-                    }
-                    System.out.println("");
+                    if(rectArrayXY[i+1][j]==false) { rectEdgeXY[i+1][j] = true; }
+                    if(rectArrayXY[i-1][j]==false) { rectEdgeXY[i-1][j] = true; }
+                    if(rectArrayXY[i][j+1]==false) { rectEdgeXY[i][j+1] = true; }
+                    if(rectArrayXY[i][j-1]==false) { rectEdgeXY[i][j-1] = true; }
                 }
             }
         }
-
         return setRotateMapping(setReverseMappingY(setReverseMappingX(rectEdgeXY)));
-
     }
-    private Boolean[][] getPointSlot() {
-        int xLim = 7;
-        int yLim = 7;
-        Boolean[][] rectArrayXY = getPieceSlot();
+
+    // このピースと対角配置にあるスロットをキースロットの周囲7*7で返す
+    private Boolean[][] getDiagonalSlot() {
+
+        Boolean[][] rectArrayXY = getFillSlot();
         Boolean[][] rectEdgeXY = getEdgeSlot();
-        System.out.println("");
 
-
-        Boolean[][] rectPointXY = new Boolean[yLim][];
-        for(int i=0; i<yLim; i++) {
-            Boolean[] rectPointX = new Boolean[xLim];
+        Boolean[][] rectPointXY = new Boolean[PIECE_LIM_Y][];
+        for(int i=0; i<PIECE_LIM_Y; i++) {
+            Boolean[] rectPointX = new Boolean[PIECE_LIM_X];
             Arrays.fill(rectPointX, false);
             rectPointXY [i] = rectPointX;
         }
 
-        for(int i=0; i<yLim; i++) {
-            for(int j=0; j<xLim; j++) {
+        for(int i=0; i<PIECE_LIM_Y; i++) {
+            for(int j=0; j<PIECE_LIM_X; j++) {
                 if(!(rectArrayXY[i][j] || rectEdgeXY[i][j])) {
-                    if((i+1)<yLim &&(j+1)<xLim && rectArrayXY[i+1][j+1]) {
-                        System.out.println((i+1)+","+(j+1));
-//                        System.out.println("LEFT_UP: "+i+","+j);
-                        rectPointXY[i][j] = true;
-                    }
-                    if((i+1)<yLim && j>0 && rectArrayXY[i+1][j-1]) {
-                        System.out.println((i+1)+","+(j-1));
-//                        System.out.println("RIGHT_UP: "+i+","+j);
-                        rectPointXY[i][j] = true;
-                    }
-                    if (i>0 && (j+1)<xLim && rectArrayXY[i-1][j+1]) {
-                        System.out.println((i-1)+","+(j+1));
-//                        System.out.println("LEFT_DOWN: "+i+","+j);
-                        rectPointXY[i][j] = true;
-                    }
-                    if(i>0 && j>0 && rectArrayXY[i-1][j-1]) {
-                        System.out.println((i-1)+","+(j-1));
-//                        System.out.println("RIGHT_DOWN: "+i+","+j);
-                        rectPointXY[i][j] = true;
-                    }
+                    if(i+1<PIECE_LIM_Y   && j+1<PIECE_LIM_X   && rectArrayXY[i+1][j+1]) { rectPointXY[i][j] = true; }
+                    if(i+1<PIECE_LIM_Y   && j>0        && rectArrayXY[i+1][j-1]) { rectPointXY[i][j] = true; }
+                    if(i>0        && j+1<PIECE_LIM_X   && rectArrayXY[i-1][j+1]) { rectPointXY[i][j] = true; }
+                    if(i>0        && j>0        && rectArrayXY[i-1][j-1]) { rectPointXY[i][j] = true; }
                 }
             }
         }
@@ -270,58 +253,53 @@ abstract class AbstractPiece extends Group {
     }
 
 
+    // ピースのキースロットを中心とした7*7スロットを、盤面12*12とキーピースからのはみ出し分3スロットを考慮した18スロットに埋め込む
+    private Boolean[][] getInBoard(Boolean[][] mapping, int PIECE_LIM_X, int PIECE_LIM_Y ,int s, int t) {
 
-    private Boolean[][] getInBoard(Boolean[][] mapping, int xlim, int ylim ,int s, int t) {
-
-        int xLim = 18;
-        int yLim = 18;
-        Boolean[][] board = new Boolean[yLim][];
-        for(int i=0; i<yLim; i++) {
-            Boolean[] boardX = new Boolean[xLim];
+        Boolean[][] board = new Boolean[BOARD_LIM_Y][];
+        for(int i=0; i<BOARD_LIM_Y; i++) {
+            Boolean[] boardX = new Boolean[BOARD_LIM_X];
             Arrays.fill(boardX, false);
             board [i] = boardX;
         }
-        for(int i=0; i<ylim; i++) {
-            for(int j=0; j<xlim; j++) {
-                if( i+t+2>=0 && j+s+2>=0 && (i+t+2)<yLim && (j+s+2)<xLim ) board[i+t+2][j+s+2] = mapping[i][j];
+        for(int i=0; i<PIECE_LIM_Y; i++) {
+            for(int j=0; j<PIECE_LIM_X; j++) {
+                if( i+t+2>=0 && j+s+2>=0 && (i+t+2)<BOARD_LIM_Y && (j+s+2)<BOARD_LIM_X ) board[i+t+2][j+s+2] = mapping[i][j];
             }
         }
         return board;
     }
 
-    private Boolean[][] getFillSlotInBoard() {
-        return getInBoard(getPieceSlot(),7 ,7 ,this.getSlot().x, this.getSlot().y);
+    // モデル出力API
+    public Boolean[][] getFillSlotInBoard() {
+        return getInBoard(getFillSlot(),7 ,7 ,slot.getX(), slot.getY());
     }
-    private Boolean[][] getEdgeSlotInBoard() {
-        return  getInBoard(getEdgeSlot(), 7, 7, this.getSlot().x, this.getSlot().y);
+    public Boolean[][] getEdgeSlotInBoard() {
+        return  getInBoard(getEdgeSlot(), 7, 7, slot.getX(), slot.getY());
     }
-    private Boolean[][] getPointSlotInBoard() {
-        return getInBoard(getPointSlot(), 7, 7, this.getSlot().x, this.getSlot().y);
+    public Boolean[][] getDiagonalSlotInBoard() {
+        return getInBoard(getDiagonalSlot(), 7, 7, slot.getX(), slot.getY());
     }
 
-    //////////////////////////////
-
+    // 90度回転
     private Boolean[][] rotate(Boolean[][] mapping) {
-        int yLim = 7;
-        int xLim = 7;
-        Boolean[][] rotateXY = new Boolean[yLim][];
-        for(int i=0; i<yLim; i++) {
-            Boolean[] rotateX = new Boolean[xLim];
+        Boolean[][] rotateXY = new Boolean[PIECE_LIM_Y][];
+        for(int i=0; i<PIECE_LIM_Y; i++) {
+            Boolean[] rotateX = new Boolean[PIECE_LIM_X];
             Arrays.fill(rotateX, false);
             rotateXY [i] = rotateX;
         }
-        for(int i=0; i<yLim; i++) {
-            for(int j=0; j<xLim; j++) {
-                rotateXY[j][yLim-i-1] = mapping[i][j];
+        for(int i=0; i<PIECE_LIM_Y; i++) {
+            for(int j=0; j<PIECE_LIM_X; j++) {
+                rotateXY[j][PIECE_LIM_Y-i-1] = mapping[i][j];
             }
         }
         return rotateXY;
     }
-
+    // 回転を加える
     private Boolean[][] setRotateMapping(Boolean[][] mapping) {
         int rot = (int)this.getRotate()/90;
         Boolean[][] rotateMapping = new Boolean[0][];
-//        System.out.println(rot);
         switch (rot%4) {
             case 0:
                 rotateMapping = mapping;
@@ -340,41 +318,37 @@ abstract class AbstractPiece extends Group {
         }
         return rotateMapping;
     }
-
+    // x反転
     private Boolean[][] reverseX(Boolean[][] mapping) {
-        int yLim = 7;
-        int xLim = 7;
-        Boolean[][] reverseXY = new Boolean[yLim][];
-        for(int i=0; i<yLim; i++) {
-            Boolean[] reverseX = new Boolean[xLim];
+        Boolean[][] reverseXY = new Boolean[PIECE_LIM_Y][];
+        for(int i=0; i<PIECE_LIM_Y; i++) {
+            Boolean[] reverseX = new Boolean[PIECE_LIM_X];
             Arrays.fill(reverseX, false);
             reverseXY[i] = reverseX;
         }
-        for(int i=0; i<yLim; i++) {
-            for(int j=0; j<xLim; j++) {
-                reverseXY[i][xLim-1-j] = mapping[i][j];
+        for(int i=0; i<PIECE_LIM_Y; i++) {
+            for(int j=0; j<PIECE_LIM_X; j++) {
+                reverseXY[i][PIECE_LIM_X-1-j] = mapping[i][j];
             }
         }
         return reverseXY;
     }
-
+    // y反転
     private Boolean[][] reverseY(Boolean[][] mapping) {
-        int yLim = 7;
-        int xLim = 7;
-        Boolean[][] reverseXY = new Boolean[yLim][];
-        for(int i=0; i<yLim; i++) {
-            Boolean[] reverseX = new Boolean[xLim];
+        Boolean[][] reverseXY = new Boolean[PIECE_LIM_Y][];
+        for(int i=0; i<PIECE_LIM_Y; i++) {
+            Boolean[] reverseX = new Boolean[PIECE_LIM_X];
             Arrays.fill(reverseX, false);
             reverseXY[i] = reverseX;
         }
-        for(int i=0; i<yLim; i++) {
-            for(int j=0; j<xLim; j++) {
-                reverseXY[yLim-1-i][j] = mapping[i][j];
+        for(int i=0; i<PIECE_LIM_Y; i++) {
+            for(int j=0; j<PIECE_LIM_X; j++) {
+                reverseXY[PIECE_LIM_Y-1-i][j] = mapping[i][j];
             }
         }
         return reverseXY;
     }
-
+    // x反転を設定
     private Boolean[][] setReverseMappingX(Boolean[][] mapping) {
         Boolean[][] reverseMapping = new Boolean[0][];
         switch ((int)this.getScaleX()) {
@@ -390,6 +364,7 @@ abstract class AbstractPiece extends Group {
         }
         return reverseMapping;
     }
+    // y反転を設定
     private Boolean[][] setReverseMappingY(Boolean[][] mapping) {
         Boolean[][] reverseMapping = new Boolean[0][];
         switch ((int)this.getScaleY()) {
@@ -404,10 +379,7 @@ abstract class AbstractPiece extends Group {
         }
         return reverseMapping;
     }
-
-
-
-
+    ///////////////////////////////////
 
 }
 

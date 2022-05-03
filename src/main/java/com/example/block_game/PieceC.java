@@ -4,7 +4,7 @@ import javafx.fxml.FXML;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 
-public class PieceC extends AbstractPiece {
+public final class PieceC extends AbstractPiece {
     @FXML private Rectangle a0;
     @FXML private Rectangle c1;
     @FXML private Rectangle c2;
