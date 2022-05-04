@@ -16,7 +16,7 @@ public final class PieceA extends AbstractPiece {
         super("pieceA.fxml", playerID, color);
         disableAnkerRect();
     }
-    private void disableAnkerRect() {
+    void disableAnkerRect() {
         this.al.setDisable(true);
         this.ar.setDisable(true);
         this.al.setOpacity(0);
