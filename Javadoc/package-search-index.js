@@ -1,0 +1,1 @@
+packageSearchIndex = [{"m":"com.example.block_game","l":"com.example.block_game"},{"l":"すべてのパッケージ","u":"allpackages-index.html"}];updateSearchResults();

@@ -12,6 +12,15 @@ import javafx.scene.shape.Rectangle;
 import java.io.IOException;
 import java.util.Arrays;
 
+/**
+ * 抽象化されたピースを表すクラスで、
+ * PieceXの親クラスであり、ブロックの空間的配置を除くほぼ全ての振る舞いを規定します。
+ * 状態として現在の左上論理位置を持ち、それを自分の形を考慮して論理配置として外部に公開します。
+ * 左上位置(ビューでのみ使用)、左上論理位置、キーとなる四角形(小クラスでピースの中心)の論理位置は全て異なる概念であることに注意してください。
+ * 継承したクラスは1マス50、5*5の大きさのピースでかつ中心に実体の四角形を持つことを要求します。
+ * そうでない場合、正しい論理配置の提供は保証されません。
+ */
+
 abstract class AbstractPiece extends Group {
     ///////////////////////////////////
     // 定数
@@ -45,30 +54,48 @@ abstract class AbstractPiece extends Group {
         }
         this.playerID = playerID;
         this.paint = paint;
-
-        // オーバーライド可能なメソッドをコンストラクタで呼ぶのはまずい！！
         this.setFill(paint);
     }
 
     ///////////////////////////////////////////
     // 座標関係ユーティリティ //
 
-    // マウスの押下位置を画面上の座標系からゲーム盤上の座標系に変換
+    /**
+     * ゲーム盤上の座標系でのマウスの押下位置を返却します。
+     * 呼び出し位置によって値が変化することに注意してください。
+     * @param event マウスイベントオブジェクト
+     * @return ゲーム盤上の座標系でのマウスの押下位置
+     */
+    //
     private Point getMousePointInBoard(MouseEvent event) {
         Point mousePointInScene = new Point(event.getSceneX(), event.getSceneY());
         return mousePointInScene.minus(App.getScene2Board());
     }
-    // 自分の座標をゲーム盤上の座標系のPoint型で返す
+
+    /**
+     * ゲーム盤上の座標系での自分(ピース)の左上位置を返却します。
+     * 呼び出し位置によって値が変化することに注意してください。
+     * このメソッドは単にJavafx.scene.Node.getLayoutX(), YのPoint型ラッパーです。
+     * @return ゲーム盤上の座標系でのピースの押下位置
+     */
     private Point getSelfPointInBoard() {
         return new Point(this.getLayoutX(), this.getLayoutY());
     }
-    // ゲーム盤上の座標系のpointの座標に移動する
+
+    /**
+     * ゲーム盤上の座標系でのピース左上位置を指定して移動します。
+     * このメソッドは単にJavafx.scene.Node.relocate()のPoint型ラッパーです。
+     * @param point ゲーム盤上の座標系でのピース左上位置
+     */
     private void relocate(Point point) {
         this.relocate(point.getX(), point.getY());
     }
     /////////////////////////////////////////////
-    // ドラッグ中のビューの更新にのみ使うクラス //
-
+    /**
+     * ドラッグ中のビューの更新にのみ使うクラス
+     * ドラッグ開始位置でのマウスの座標と現在(ドラッグ中)のマウスの座標の差を取り、ドラッグ開始時のピースの座標に加算して返却する役割を担います。
+     * ゲーム盤上の座標系において、ピースの左上位置とマウスの押下位置は一致しませんが、移動距離は整合しなければならないことに注意してください。
+     */
     private final static class DragView {
         private Point mousePress = new Point( 0.0, 0.0);
         private Point mouseDrag = new Point( 0.0, 0.0);
@@ -80,9 +107,9 @@ abstract class AbstractPiece extends Group {
     }
     ////////////////////////////////////////
     // initialize //
-
-    // initializeはコンストラクタ、子コンポーネントidの変数へのバインド後に自動的に呼ばれる。
-    // ここでは各種イベントハンドラの登録を行っている
+    /**
+     * initializeはコンストラクタ、子コンポーネントidの変数へのバインド後に自動的に呼ばれ、各種イベントハンドラの登録を行います。
+     */
     private @FXML void initialize() {
         this.setOnMousePressed(event -> {
 
@@ -155,13 +182,22 @@ abstract class AbstractPiece extends Group {
     }
     //////////////////////////////////////////////
     // 色変え
+
+    /**
+     * コンストラクタで呼ばれ、色を設定します。
+     * @param paint ピースの色
+     */
     private void setFill(Paint paint) {
         for(Node node: this.getChildren()) {
             Rectangle rectangle = (Rectangle) node;
             rectangle.setFill(paint);
         }
     }
-    // moveに提供
+
+    /**
+     * 外部に現在の自分の左上論理位置の状態を公開します。
+     * @return
+     */
     public Slot getSlot() {
         return this.slot;
     }
