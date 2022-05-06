@@ -141,6 +141,7 @@ abstract class AbstractPiece extends Group {
             // 帰ってきたモデルの通りにビューを更新する
             this.relocate(slot.getPoint());
 
+            testPrint(); // test
         });
 
         this.setOnKeyTyped(event -> {
@@ -178,7 +179,21 @@ abstract class AbstractPiece extends Group {
                 }
                 default -> { }
             }
+            testPrint(); // test
         });
+    }
+
+    private void testPrint() {
+        System.out.println("");
+        System.out.println("Fill: ");
+        print2D(getFillSlotInBoard());
+        System.out.println("");
+        System.out.println("Edge");
+        print2D(getEdgeSlotInBoard());
+        System.out.println("");
+        System.out.println("Diagonal");
+        print2D(getDiagonalSlotInBoard());
+        System.out.println("");
     }
     //////////////////////////////////////////////
     // 色変え
@@ -259,7 +274,7 @@ abstract class AbstractPiece extends Group {
                 }
             }
         }
-        return setRotateMapping(setReverseMappingY(setReverseMappingX(rectEdgeXY)));
+        return rectEdgeXY;
     }
 
     // このピースと対角配置にあるスロットをキースロットの周囲7*7で返す
@@ -285,7 +300,7 @@ abstract class AbstractPiece extends Group {
                 }
             }
         }
-        return setRotateMapping(setReverseMappingY(setReverseMappingX(rectPointXY)));
+        return rectPointXY;
     }
 
 
@@ -396,7 +411,6 @@ abstract class AbstractPiece extends Group {
                 break;
             default:
                 break;
-
         }
         return reverseMapping;
     }
