@@ -54,6 +54,7 @@ public final class App extends Application {
             }
             players.get(0).getPieces().get(0).setDisable(false);
             players.get(0).getPieces().get(0).setOpacity(100);
+            players.get(0).getPieces().get(0).requestFocus();
         });
 
         b1Button.setOnAction(event -> {
@@ -63,6 +64,7 @@ public final class App extends Application {
             }
             players.get(0).getPieces().get(1).setDisable(false);
             players.get(0).getPieces().get(1).setOpacity(100);
+            players.get(0).getPieces().get(1).requestFocus();
         });
         c1Button.setOnAction(event -> {
             for(int i=0; i<players.get(0).getPieces().size(); i++) {
@@ -71,6 +73,7 @@ public final class App extends Application {
             }
             players.get(0).getPieces().get(2).setDisable(false);
             players.get(0).getPieces().get(2).setOpacity(100);
+            players.get(0).getPieces().get(2).requestFocus();
         });
         d1Button.setOnAction(event -> {
             for(int i=0; i<players.get(0).getPieces().size(); i++) {
@@ -79,6 +82,7 @@ public final class App extends Application {
             }
             players.get(0).getPieces().get(3).setDisable(false);
             players.get(0).getPieces().get(3).setOpacity(100);
+            players.get(0).getPieces().get(3).requestFocus();
         });
 
     }

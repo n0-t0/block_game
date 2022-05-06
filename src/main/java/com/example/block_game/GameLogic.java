@@ -14,5 +14,4 @@ public class GameLogic {
         // 盤面情報を登録
         return true; // debug
     }
-
 }

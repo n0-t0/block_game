@@ -188,12 +188,12 @@ abstract class AbstractPiece extends Group {
         System.out.println("Fill: ");
         print2D(getFillSlotInBoard());
         System.out.println("");
-        System.out.println("Edge");
-        print2D(getEdgeSlotInBoard());
-        System.out.println("");
-        System.out.println("Diagonal");
-        print2D(getDiagonalSlotInBoard());
-        System.out.println("");
+//        System.out.println("Edge");
+//        print2D(getEdgeSlotInBoard());
+//        System.out.println("");
+//        System.out.println("Diagonal");
+//        print2D(getDiagonalSlotInBoard());
+//        System.out.println("");
     }
     //////////////////////////////////////////////
     // 色変え
@@ -223,16 +223,18 @@ abstract class AbstractPiece extends Group {
 
     // デバッグ用プリント
     private static void print2D(Boolean[][] rectArrayXY) {
-        Arrays.stream(rectArrayXY).forEach((arrayX) ->{
-            Arrays.stream(arrayX).forEach((elem) ->{
-                if(elem.toString().equals("true")) {
-                    System.out.print("\u001b[00;31m"+elem.toString()+" "+"\u001b[00m"+",");
+        for(int i=0; i<rectArrayXY.length; i++) {
+            for(int j=0; j<rectArrayXY[i].length; j++) {
+                if(i<3 || j<3 || i>14 || j>14) System.out.print("\u001b[43m");
+                if(rectArrayXY[i][j].toString().equals("true")) {
+                    System.out.print("\u001b[31m"+rectArrayXY[i][j].toString()+" "+","+"\u001b[00m");
                 } else {
-                    System.out.print(elem.toString()+",");
+                    System.out.print(rectArrayXY[i][j].toString()+",");
                 }
-            });
+                if(i<3 || j<3 || i>14 || j>14) System.out.print("\u001b[00m");
+            }
             System.out.println("");
-        });
+        }
     }
 
     // このピースで埋められているスロットをキースロットの周囲7*7で返す
@@ -249,6 +251,10 @@ abstract class AbstractPiece extends Group {
         for(Node child: children) {
             if(!child.isDisabled()) rectArrayXY[(int)child.getLayoutY()/50+1][(int)child.getLayoutX()/50+1] = true;
         }
+//
+//
+//        System.out.println(setRotateMapping(setReverseMappingY(setReverseMappingX(rectArrayXY))));
+
         return setRotateMapping(setReverseMappingY(setReverseMappingX(rectArrayXY)));
     }
 
@@ -307,6 +313,8 @@ abstract class AbstractPiece extends Group {
     // ピースのキースロットを中心とした7*7スロットを、盤面12*12とキーピースからのはみ出し分3スロットを考慮した18スロットに埋め込む
     private Boolean[][] getInBoard(Boolean[][] mapping, int PIECE_LIM_X, int PIECE_LIM_Y ,int s, int t) {
 
+
+
         Boolean[][] board = new Boolean[BOARD_LIM_Y][];
         for(int i=0; i<BOARD_LIM_Y; i++) {
             Boolean[] boardX = new Boolean[BOARD_LIM_X];
@@ -350,7 +358,13 @@ abstract class AbstractPiece extends Group {
     // 回転を加える
     private Boolean[][] setRotateMapping(Boolean[][] mapping) {
         int rot = (int)this.getRotate()/90;
-        Boolean[][] rotateMapping = new Boolean[0][];
+
+        Boolean[][] rotateMapping = new Boolean[PIECE_LIM_Y][];
+        for(int i=0; i<PIECE_LIM_Y; i++) {
+            Boolean[] rotateMappingX = new Boolean[PIECE_LIM_X];
+            Arrays.fill(rotateMappingX, false);
+            rotateMapping [i] = rotateMappingX;
+        }
         switch (rot%4) {
             case 0:
                 rotateMapping = mapping;
