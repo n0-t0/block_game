@@ -13,8 +13,8 @@ public final class PieceC extends AbstractPiece {
     @FXML private Rectangle cl;
     @FXML private Rectangle cr;
     // コンストラクタ
-    public PieceC(int playerID, Paint color) {
-        super("pieceC.fxml", playerID, color);
+    public PieceC(Player player) {
+        super("pieceC.fxml", player);
         disableAnkerRect();
     }
     private void disableAnkerRect() {

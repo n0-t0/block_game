@@ -32,7 +32,7 @@ abstract class AbstractPiece extends Group {
     // コンストラクタで初期化されたら変化しない値
     private final int playerID;
     // ピースの色
-    private final Paint paint;
+    private final Paint color;
 
     /////////////////////////////////////
     // 状態
@@ -42,7 +42,7 @@ abstract class AbstractPiece extends Group {
     private DragView dragView = new DragView();
     /////////////////////////////////////
 
-    protected AbstractPiece(String resource, int playerID, Paint paint) {
+    protected AbstractPiece(String resource, Player player) {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(resource));
         fxmlLoader.setRoot(this);
         fxmlLoader.setController(this);
@@ -52,9 +52,9 @@ abstract class AbstractPiece extends Group {
             System.out.println(this.getClass().getName()+"のロードで例外が発生");
             throw new RuntimeException(exception);
         }
-        this.playerID = playerID;
-        this.paint = paint;
-        this.setFill(paint);
+        this.playerID = player.getID();
+        this.color = player.getColor();
+        this.setFill(color);
     }
 
     ///////////////////////////////////////////

@@ -12,8 +12,8 @@ public final class PieceA extends AbstractPiece {
     @FXML private Rectangle a4;
     @FXML private Rectangle ar;
     @FXML private Rectangle al;
-    public PieceA(int playerID, Paint color) {
-        super("pieceA.fxml", playerID, color);
+    public PieceA(Player player) {
+        super("pieceA.fxml", player);
         disableAnkerRect();
     }
     void disableAnkerRect() {
